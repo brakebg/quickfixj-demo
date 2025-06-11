@@ -28,8 +28,8 @@ public class FixServerConfig {
         return new FixServerHandler();
     }
 
-    @Bean
-    public Acceptor acceptor(FixServerHandler application) throws ConfigError {
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public SocketAcceptor acceptor(FixServerHandler application) throws ConfigError {
         try {
             Resource resource = resourceLoader.getResource("classpath:" + configFile);
             Assert.isTrue(resource.exists(), "FIX configuration file not found: " + configFile + " in classpath");

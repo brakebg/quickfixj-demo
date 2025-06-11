@@ -1,6 +1,7 @@
 package com.example.quickfixjdemo;
 
-import com.example.quickfixjdemo.fix.FixApplication;
+import com.example.fixserver.fix.FixApplication;
+import com.example.fixserver.FixServerApplication;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class FixApplicationTest {
     @BeforeEach
     void setUp() throws ConfigError, IOException, InterruptedException {
         // Start Spring Boot application
-        applicationContext = SpringApplication.run(QuickfixjDemoApplication.class);
+        applicationContext = SpringApplication.run(FixServerApplication.class);
         
         // Wait for the application to start and the FIX acceptor to be ready
         Thread.sleep(2000);
