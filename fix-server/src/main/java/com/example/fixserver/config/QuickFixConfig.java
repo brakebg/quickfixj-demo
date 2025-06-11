@@ -1,6 +1,6 @@
-package com.example.quickfixjdemo.config;
+package com.example.fixserver.config;
 
-import com.example.quickfixjdemo.fix.FixApplication;
+import com.example.fixserver.fix.FixApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import quickfix.*;

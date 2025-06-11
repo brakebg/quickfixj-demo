@@ -1,4 +1,4 @@
-package com.example.quickfixjdemo.fix;
+package com.example.fixserver.fix;
 
 import lombok.extern.slf4j.Slf4j;
 import quickfix.*;
