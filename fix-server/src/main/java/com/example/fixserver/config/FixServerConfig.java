@@ -1,27 +1,16 @@
 package com.example.fixserver.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.Assert;
 import quickfix.*;
 import com.example.fixserver.handler.FixServerHandler;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class FixServerConfig {
-
-    private final ResourceLoader resourceLoader;
-    private final String configFile;
-
-    public FixServerConfig(ResourceLoader resourceLoader, @Value("${fix.server.config}") String configFile) {
-        this.resourceLoader = resourceLoader;
-        this.configFile = configFile;
-    }
 
     @Bean
     public FixServerHandler fixServerHandler() {
@@ -30,26 +19,38 @@ public class FixServerConfig {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public SocketAcceptor acceptor(FixServerHandler application) throws ConfigError {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:" + configFile);
-            Assert.isTrue(resource.exists(), "FIX configuration file not found: " + configFile + " in classpath");
-            
-            try (InputStream inputStream = resource.getInputStream()) {
-                SessionSettings settings = new SessionSettings(inputStream);
-                MessageStoreFactory storeFactory = new FileStoreFactory(settings);
-                LogFactory logFactory = new FileLogFactory(settings);
-                MessageFactory messageFactory = new DefaultMessageFactory();
-                
-                return new SocketAcceptor(
-                    application,
-                    storeFactory,
-                    settings,
-                    logFactory,
-                    messageFactory
-                );
-            }
-        } catch (IOException e) {
-            throw new ConfigError("Failed to load FIX configuration from " + configFile + ": " + e.getMessage(), e);
+        String config = """
+[DEFAULT]
+ConnectionType=acceptor
+SocketAcceptPort=5001
+StartTime=00:00:00
+EndTime=23:59:59
+FileLogPath=log
+FileStorePath=store
+HeartBtInt=30
+ValidateUserDefinedFields=N
+
+[SESSION]
+BeginString=FIX.4.2
+SenderCompID=SERVER
+TargetCompID=CLIENT
+""";
+
+        try (InputStream inputStream = new ByteArrayInputStream(config.getBytes(StandardCharsets.US_ASCII))) {
+            SessionSettings settings = new SessionSettings(inputStream);
+            MessageStoreFactory storeFactory = new FileStoreFactory(settings);
+            LogFactory logFactory = new FileLogFactory(settings);
+            MessageFactory messageFactory = new DefaultMessageFactory();
+
+            return new SocketAcceptor(
+                application,
+                storeFactory,
+                settings,
+                logFactory,
+                messageFactory
+            );
+        } catch (Exception e) {
+            throw new ConfigError("Failed to create FIX settings: " + e.getMessage(), e);
         }
     }
-} 
+}
